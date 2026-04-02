@@ -122,4 +122,131 @@
   },
   "ticker": ["Welcome to Strand Moslem Council. Please silence your phones."],
   "donation": { "raised": 210000, "goal": 300000, "percentage": 70 },
-  "monthlyExpenses": { "utilityBills": 1
+  "monthlyExpenses": { "utilityBills": 120000, "salaries": 90000, "propertyMaintenance": 8000, "janaazaCosts": 5000 }
+}
+</script>
+
+<div class="flex h-screen w-screen overflow-hidden">
+    <aside class="w-[25%] h-full flex flex-col p-10 bg-[#0b1326] border-r border-white/10 z-40">
+        <div class="mb-10">
+            <h1 class="text-2xl font-bold text-primary">Strand Moslem Council</h1>
+        </div>
+        
+        <div class="mb-12">
+            <div class="text-7xl font-black tracking-tighter text-white" id="current-time">12:45 <span class="text-3xl opacity-60">PM</span></div>
+            <div class="text-xl font-medium text-secondary" id="current-date">Thursday, April 2, 2026</div>
+        </div>
+
+        <div class="flex-grow space-y-4" id="prayer-times-container">
+            </div>
+    </aside>
+
+    <main class="w-[75%] h-full relative flex flex-col p-16">
+        <nav class="flex justify-between items-center mb-10 z-30">
+            <div class="flex gap-8" id="tab-navigation">
+                <a class="tab-link text-xs uppercase tracking-widest text-primary border-b-2 border-primary pb-1" href="#" data-slide="0">Announcements</a>
+                <a class="tab-link text-xs uppercase tracking-widest text-on-surface-variant" href="#" data-slide="1">Donations</a>
+                <a class="tab-link text-xs uppercase tracking-widest text-on-surface-variant" href="#" data-slide="2">Expenses</a>
+            </div>
+        </nav>
+
+        <div class="flex-grow relative overflow-hidden">
+            <div class="carousel-slide absolute inset-0 opacity-100 transition-opacity duration-1000" id="slide-0">
+                <h2 class="text-6xl font-black mb-10">Upcoming <span class="text-primary">Events</span></h2>
+                <div class="space-y-6" id="events-container"></div>
+            </div>
+
+            <div class="carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000" id="slide-1">
+                <h2 class="text-6xl font-black mb-10">Ablution <span class="text-primary">Project</span></h2>
+                <div class="bg-surface-container-high/40 p-10 rounded-3xl border border-white/10">
+                    <div class="flex justify-between mb-4">
+                        <span class="text-4xl font-bold">R210,000 / R300,000</span>
+                        <span class="text-4xl font-black text-primary">70%</span>
+                    </div>
+                    <div class="w-full h-8 bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary" style="width: 70%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000" id="slide-2">
+                <h2 class="text-6xl font-black mb-10 text-center">Monthly <span class="text-secondary">Expenses</span></h2>
+                <div class="h-[400px] w-full flex justify-center">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4 mt-10">
+            <div class="h-1 w-12 bg-primary rounded-full"></div>
+            <div class="h-1 w-12 bg-white/20 rounded-full"></div>
+            <div class="h-1 w-12 bg-white/20 rounded-full"></div>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 left-0 w-full h-16 bg-surface-container-lowest/80 backdrop-blur-md flex items-center overflow-hidden border-t border-white/5">
+        <div class="flex scrolling-ticker-animation whitespace-nowrap" id="ticker-content-1"></div>
+    </footer>
+</div>
+
+<script>
+(function() {
+    const data = JSON.parse(document.getElementById('dashboard-data').textContent);
+    let currentSlide = 0;
+
+    function updateUI() {
+        const now = new Date();
+        document.getElementById('current-time').innerHTML = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Populate Events
+        document.getElementById('events-container').innerHTML = data.events.map(e => `
+            <div class="flex gap-6 bg-white/5 p-6 rounded-2xl border border-white/5">
+                <div class="bg-primary/20 p-4 rounded-xl text-center min-w-[80px]">
+                    <div class="text-xs font-bold text-primary">${e.day}</div>
+                    <div class="text-3xl font-black text-white">${e.dayNum}</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">${e.title}</div>
+                    <div class="text-on-surface-variant">${e.time} • ${e.location}</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Ticker
+        const tickerMsg = `STRAND MOSLEM COUNCIL • ${data.ticker[0]} • `;
+        document.getElementById('ticker-content-1').innerHTML = `<span class="text-xl font-bold px-10">${tickerMsg.repeat(10)}</span>`;
+    }
+
+    let chart = null;
+    function initChart() {
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        if(chart) chart.destroy();
+        chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Utilities', 'Salaries', 'Maintenance', 'Janaaza'],
+                datasets: [{
+                    data: [data.monthlyExpenses.utilityBills, data.monthlyExpenses.salaries, data.monthlyExpenses.propertyMaintenance, data.monthlyExpenses.janaazaCosts],
+                    backgroundColor: ['#68dba9', '#e9c349', '#bec6e0', '#ffb4ab'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { labels: { color: '#fff', font: { size: 18 } } } } }
+        });
+    }
+
+    function rotateSlides() {
+        const slides = document.querySelectorAll('.carousel-slide');
+        slides.forEach((s, i) => s.style.opacity = (i === currentSlide) ? '1' : '0');
+        if(currentSlide === 2) initChart();
+        currentSlide = (currentSlide + 1) % slides.length;
+    }
+
+    updateUI();
+    setInterval(updateUI, 1000);
+    setInterval(rotateSlides, 10000);
+    rotateSlides();
+})();
+</script>
+</body>
+</html>
