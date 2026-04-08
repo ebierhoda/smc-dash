@@ -2,250 +2,410 @@
 <html class="dark" lang="en">
 <head>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=0.95, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0"/>
     <title>Strand Moslem Council - Digital Signage</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <script id="tailwind-config">
+
+    <script>
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
-                    "colors": {
-                        "on-primary": "#003825",
-                        "primary": "#68dba9",
-                        "surface-container-high": "#222a3d",
-                        "on-surface": "#dae2fd",
-                        "surface-container": "#171f33",
-                        "surface-bright": "#31394d",
-                        "primary-fixed-dim": "#68dba9",
-                        "surface-container-highest": "#2d3449",
-                        "on-secondary-container": "#342800",
-                        "on-primary-container": "#009367",
-                        "surface-container-low": "#131b2e",
-                        "error": "#ffb4ab",
+                    colors: {
+                        "on-primary":               "#003825",
+                        "primary":                  "#68dba9",
+                        "on-primary-container":     "#009367",
+                        "surface-container-high":   "#222a3d",
+                        "surface-container-highest":"#2d3449",
                         "surface-container-lowest": "#060e20",
-                        "on-tertiary-container": "#798098",
-                        "tertiary-fixed": "#dae2fd",
-                        "inverse-on-surface": "#283044",
-                        "on-surface-variant": "#c6c6cd",
-                        "on-secondary-fixed": "#241a00",
-                        "primary-container": "#001c11",
-                        "tertiary-fixed-dim": "#bec6e0",
-                        "on-primary-fixed": "#002114",
-                        "secondary-fixed": "#ffe088",
-                        "surface-dim": "#0b1326",
-                        "on-error-container": "#ffdad6",
-                        "on-primary-fixed-variant": "#005137",
-                        "tertiary": "#bec6e0",
-                        "secondary-fixed-dim": "#e9c349",
-                        "on-error": "#690005",
-                        "primary-fixed": "#85f8c4",
-                        "on-tertiary-fixed": "#131b2e",
-                        "secondary-container": "#af8d11",
-                        "on-secondary-fixed-variant": "#574500",
-                        "outline": "#909097",
-                        "tertiary-container": "#0f172a",
-                        "on-background": "#dae2fd",
-                        "surface-variant": "#2d3449",
-                        "on-tertiary-fixed-variant": "#3f465c",
-                        "on-secondary": "#3c2f00",
-                        "inverse-primary": "#006c4a",
-                        "error-container": "#93000a",
-                        "background": "#0b1326",
-                        "outline-variant": "#45464d",
-                        "on-tertiary": "#283044",
-                        "surface": "#0b1326",
-                        "secondary": "#e9c349",
-                        "inverse-surface": "#dae2fd",
-                        "surface-tint": "#68dba9"
-                    }
-                },
-            },
+                        "on-surface":               "#dae2fd",
+                        "on-surface-variant":       "#c6c6cd",
+                        "background":               "#0b1326",
+                        "surface":                  "#0b1326",
+                        "secondary":                "#e9c349",
+                        "tertiary":                 "#bec6e0",
+                        "error":                    "#ffb4ab",
+                        "error-container":          "#93000a",
+                    },
+                    fontFamily: { sans: ["Inter", "sans-serif"] }
+                }
+            }
         }
     </script>
 
     <style>
-        /* TV OVERSCAN FIX */
-        body {
-            margin: 0;
-            padding: 0;
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             overflow: hidden;
-            background-color: #0b1326;
-            /* Scale down slightly so content isn't cut off by TV edges */
-            transform: scale(0.97); 
-            transform-origin: center center;
-            width: 100vw;
-            height: 100vh;
+            background: #0b1326;
+            font-family: 'Inter', sans-serif;
         }
 
-        @keyframes ticker {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+        #scaler {
+            position: absolute;
+            top: 0; left: 0;
+            width: 1920px;
+            height: 1080px;
+            transform-origin: top left;
+            overflow: hidden;
         }
-        .scrolling-ticker-animation {
-            animation: ticker 30s linear infinite;
-        }
+
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
-        .glass-panel {
-            background: rgba(45, 52, 73, 0.4);
-            backdrop-filter: blur(20px);
+
+        .carousel-slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+        .carousel-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tab-link { transition: color 0.3s; }
+        .tab-link.active {
+            color: #e9c349 !important;
+            border-bottom: 2px solid #e9c349;
+            padding-bottom: 4px;
         }
     </style>
 </head>
-<body class="text-on-surface font-body selection:bg-primary selection:text-on-primary">
+<body>
 
 <script type="application/json" id="dashboard-data">
 {
-  "location": { "name": "Strand, Cape Town" },
-  "prayerTimes2026": [
-    {"date": "2026-04-02", "fajr": "05:36", "sunrise": "07:06", "dhuhr": "12:55", "asr": "15:59", "maghrib": "18:41", "isha": "20:07"}
-  ],
-  "events": [
-    { "day": "FRI", "dayNum": "3", "title": "Friday Family Night: Seerah", "time": "7:00 PM", "location": "Main Hall" },
-    { "day": "SAT", "dayNum": "4", "title": "Community Clean-up", "time": "9:00 AM", "location": "Grounds" }
-  ],
-  "community": {
-    "volunteers": [
-      { "name": "Ahmed Davids", "role": "Youth", "initials": "AD", "color": "primary" },
-      { "name": "Fatima Johnson", "role": "Outreach", "initials": "FJ", "color": "secondary" }
-    ],
-    "milestones": [
-      { "label": "Years Serving", "value": "20+", "icon": "emoji_events" },
-      { "label": "Active Members", "value": "500+", "icon": "groups" }
-    ]
+  "prayerTimes": {
+    "1":  ["04:58","06:26","13:02","16:47","19:37","21:00"],
+    "2":  ["05:15","06:37","13:04","16:44","19:29","20:48"],
+    "3":  ["05:22","06:40","12:57","16:30","19:12","20:29"],
+    "4":  ["05:20","06:35","12:44","16:09","18:51","20:06"],
+    "5":  ["05:14","06:29","12:35","15:52","18:38","19:52"],
+    "6":  ["05:10","06:27","12:31","15:43","18:33","19:47"],
+    "7":  ["05:08","06:26","12:31","15:44","18:34","19:48"],
+    "8":  ["05:00","06:18","12:33","15:53","18:45","19:59"],
+    "9":  ["04:43","06:02","12:32","16:04","19:00","20:16"],
+    "10": ["04:22","05:44","12:29","16:14","19:13","20:31"],
+    "11": ["04:05","05:31","12:27","16:24","19:22","20:43"],
+    "12": ["04:00","05:28","12:29","16:35","19:30","20:52"]
   },
-  "ticker": ["Welcome to Strand Moslem Council. Please silence your phones."],
+  "events": [
+    { "day": "FRI", "dayNum": "3",  "title": "Friday Family Night: Seerah Class", "time": "7:00 PM", "location": "Main Hall" },
+    { "day": "SAT", "dayNum": "4",  "title": "Community Clean-up",                "time": "9:00 AM", "location": "Mosque Grounds" }
+  ],
   "donation": { "raised": 210000, "goal": 300000, "percentage": 70 },
-  "monthlyExpenses": { "utilityBills": 120000, "salaries": 90000, "propertyMaintenance": 8000, "janaazaCosts": 5000 }
+  "monthlyExpenses": { "Utility Bills": 120000, "Salaries": 90000, "Maintenance": 8000, "Janaaza": 5000 }
 }
 </script>
 
-<div class="flex h-screen w-screen overflow-hidden">
-    <aside class="w-[25%] h-full flex flex-col p-10 bg-[#0b1326] border-r border-white/10 z-40">
-        <div class="mb-10">
-            <h1 class="text-2xl font-bold text-primary">Strand Moslem Council</h1>
-        </div>
-        
-        <div class="mb-12">
-            <div class="text-7xl font-black tracking-tighter text-white" id="current-time">12:45 <span class="text-3xl opacity-60">PM</span></div>
-            <div class="text-xl font-medium text-secondary" id="current-date">Thursday, April 2, 2026</div>
-        </div>
+<div id="scaler" class="bg-background text-on-surface flex flex-col">
 
-        <div class="flex-grow space-y-4" id="prayer-times-container">
-            </div>
-    </aside>
+    <div class="flex overflow-hidden" style="height:1016px">
 
-    <main class="w-[75%] h-full relative flex flex-col p-16">
-        <nav class="flex justify-between items-center mb-10 z-30">
-            <div class="flex gap-8" id="tab-navigation">
-                <a class="tab-link text-xs uppercase tracking-widest text-primary border-b-2 border-primary pb-1" href="#" data-slide="0">Announcements</a>
-                <a class="tab-link text-xs uppercase tracking-widest text-on-surface-variant" href="#" data-slide="1">Donations</a>
-                <a class="tab-link text-xs uppercase tracking-widest text-on-surface-variant" href="#" data-slide="2">Expenses</a>
-            </div>
-        </nav>
+        <!-- ════════ SIDEBAR ════════ -->
+        <aside class="flex-shrink-0 flex flex-col p-10 bg-[#0b1326] border-r border-white/10" style="width:400px">
 
-        <div class="flex-grow relative overflow-hidden">
-            <div class="carousel-slide absolute inset-0 opacity-100 transition-opacity duration-1000" id="slide-0">
-                <h2 class="text-6xl font-black mb-10">Upcoming <span class="text-primary">Events</span></h2>
-                <div class="space-y-6" id="events-container"></div>
+            <div class="flex items-center gap-4 mb-10">
+                <div class="rounded-2xl overflow-hidden flex-shrink-0 shadow-[0_0_20px_rgba(104,219,169,0.3)]" style="width:56px;height:56px">
+                    <img src="SMC LOGO.jpg" alt="SMC Logo" style="width:100%;height:100%;object-fit:cover"
+                         onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:100%;background:rgba(104,219,169,0.15);display:flex;align-items:center;justify-content:center\'><span class=\'material-symbols-outlined\' style=\'color:#68dba9;font-size:32px\'>mosque</span></div>'"/>
+                </div>
+                <h1 class="text-2xl font-bold text-primary leading-tight">Strand Moslem<br/>Council</h1>
             </div>
 
-            <div class="carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000" id="slide-1">
-                <h2 class="text-6xl font-black mb-10">Ablution <span class="text-primary">Project</span></h2>
-                <div class="bg-surface-container-high/40 p-10 rounded-3xl border border-white/10">
-                    <div class="flex justify-between mb-4">
-                        <span class="text-4xl font-bold">R210,000 / R300,000</span>
-                        <span class="text-4xl font-black text-primary">70%</span>
+            <div class="mb-10">
+                <div id="clock-time" class="font-black tracking-tighter text-white leading-none" style="font-size:80px">
+                    --:-- <span style="font-size:36px;font-weight:300;opacity:0.6">--</span>
+                </div>
+                <div id="clock-date" class="text-2xl font-medium text-secondary mt-2">Loading...</div>
+            </div>
+
+            <div class="flex-1 overflow-hidden">
+                <p class="text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-4">Daily Prayer Times</p>
+                <div id="prayer-list" class="space-y-2"></div>
+            </div>
+
+            <div class="mt-6 p-5 rounded-2xl border border-white/5" style="background:#2d3449">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="w-2 h-2 bg-secondary rounded-full animate-pulse"></span>
+                    <span class="text-secondary text-xs font-bold uppercase tracking-widest">Live Alert</span>
+                </div>
+                <p class="text-sm font-medium">Jumu'ah Prayer will start at 1:15 PM today. Please arrive early.</p>
+            </div>
+        </aside>
+
+        <!-- ════════ MAIN ════════ -->
+        <main class="flex-1 flex flex-col overflow-hidden" style="padding:40px 64px 0">
+
+            <nav class="flex justify-between items-center flex-shrink-0 mb-8">
+                <div class="flex gap-10" id="tab-nav">
+                    <a class="tab-link active text-sm font-bold uppercase tracking-widest text-on-surface-variant" href="#" data-slide="0">Announcements</a>
+                    <a class="tab-link text-sm font-bold uppercase tracking-widest text-on-surface-variant" href="#" data-slide="1">Donations</a>
+                    <a class="tab-link text-sm font-bold uppercase tracking-widest text-on-surface-variant" href="#" data-slide="2">Stats</a>
+                    <a class="tab-link text-sm font-bold uppercase tracking-widest text-on-surface-variant" href="#" data-slide="3">Community</a>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-full border border-red-400/20" style="background:rgba(127,29,29,0.2)">
+                    <span class="material-symbols-outlined animate-pulse" style="color:#f87171;font-size:14px">radio_button_checked</span>
+                    <span class="text-xs font-bold uppercase tracking-widest" style="color:#f87171">Live</span>
+                </div>
+            </nav>
+
+            <div class="flex-1 relative overflow-hidden">
+
+                <!-- Slide 0 · Announcements -->
+                <div class="carousel-slide active" id="slide-0">
+                    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 text-primary" style="background:rgba(104,219,169,0.1)">Coming Up</span>
+                    <h2 class="font-black text-white mb-10" style="font-size:72px">Upcoming <span class="text-primary">Events</span></h2>
+                    <div class="space-y-6" id="events-container"></div>
+                </div>
+
+                <!-- Slide 1 · Donations -->
+                <div class="carousel-slide" id="slide-1">
+                    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 text-primary" style="background:rgba(104,219,169,0.1)">Financial Progress</span>
+                    <h2 class="font-black text-white leading-tight mb-10" style="font-size:72px">Jaamia Masjid<br/><span class="text-primary">Ablution Project</span></h2>
+                    <div class="p-10 rounded-3xl border border-white/5 mb-8" style="background:rgba(34,42,61,0.4)">
+                        <div class="flex justify-between items-end mb-6">
+                            <div>
+                                <p class="text-sm uppercase tracking-widest text-on-surface-variant mb-1">Total Raised</p>
+                                <p class="font-bold text-white" style="font-size:48px">R210,000 <span class="font-normal text-on-surface-variant" style="font-size:24px">/ R300,000</span></p>
+                            </div>
+                            <p class="font-black text-primary" style="font-size:48px">70%</p>
+                        </div>
+                        <div class="w-full rounded-full overflow-hidden" style="height:32px;background:rgba(255,255,255,0.1)">
+                            <div class="h-full rounded-full" style="width:70%;background:linear-gradient(to right,#68dba9,#009367)"></div>
+                        </div>
                     </div>
-                    <div class="w-full h-8 bg-white/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: 70%"></div>
+                    <div class="flex items-center gap-6">
+                        <div class="flex-shrink-0 bg-white p-2 rounded-2xl shadow-xl" style="width:128px;height:128px">
+                            <div class="w-full h-full bg-slate-100 flex items-center justify-center border-2 border-dashed border-slate-300 rounded-xl">
+                                <span class="material-symbols-outlined text-slate-400" style="font-size:48px">qr_code_2</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-2xl font-bold mb-1">Scan to Donate</p>
+                            <p class="text-lg text-on-surface-variant">Your contribution helps us complete the ablution facility before the next Eid.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="carousel-slide absolute inset-0 opacity-0 transition-opacity duration-1000" id="slide-2">
-                <h2 class="text-6xl font-black mb-10 text-center">Monthly <span class="text-secondary">Expenses</span></h2>
-                <div class="h-[400px] w-full flex justify-center">
-                    <canvas id="expenseChart"></canvas>
+                <!-- Slide 2 · Stats -->
+                <div class="carousel-slide" id="slide-2">
+                    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 text-secondary" style="background:rgba(233,195,73,0.1)">Financials</span>
+                    <h2 class="font-black text-white mb-10" style="font-size:72px">Monthly <span class="text-secondary">Expenses</span></h2>
+                    <div class="flex items-center gap-16">
+                        <div class="flex-shrink-0" style="width:360px;height:360px">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                        <div class="space-y-5 flex-1" id="expense-legend"></div>
+                    </div>
                 </div>
+
+                <!-- Slide 3 · Community -->
+                <div class="carousel-slide" id="slide-3">
+                    <span class="inline-block px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-6 text-secondary" style="background:rgba(233,195,73,0.1)">Community Impact</span>
+                    <h2 class="font-black text-white mb-10" style="font-size:72px">Your Zakat <span class="text-secondary">At Work</span></h2>
+                    <div class="grid grid-cols-3 gap-8">
+                        <div class="p-8 rounded-3xl border border-white/5" style="background:rgba(34,42,61,0.4)">
+                            <span class="material-symbols-outlined text-primary mb-4" style="font-size:48px;font-variation-settings:'FILL' 1;display:block">restaurant</span>
+                            <p class="font-black text-white mb-2" style="font-size:48px">150</p>
+                            <p class="text-sm font-medium uppercase tracking-widest text-on-surface-variant">Families Fed</p>
+                        </div>
+                        <div class="p-8 rounded-3xl border border-white/5" style="background:rgba(34,42,61,0.4)">
+                            <span class="material-symbols-outlined text-primary mb-4" style="font-size:48px;font-variation-settings:'FILL' 1;display:block">school</span>
+                            <p class="font-black text-white mb-2" style="font-size:48px">40</p>
+                            <p class="text-sm font-medium uppercase tracking-widest text-on-surface-variant">Youth Mentored</p>
+                        </div>
+                        <div class="p-8 rounded-3xl border border-white/5" style="background:rgba(34,42,61,0.4)">
+                            <span class="material-symbols-outlined text-primary mb-4" style="font-size:48px;font-variation-settings:'FILL' 1;display:block">receipt_long</span>
+                            <p class="font-black text-white mb-2" style="font-size:48px">15</p>
+                            <p class="text-sm font-medium uppercase tracking-widest text-on-surface-variant">Local Bills Paid</p>
+                        </div>
+                    </div>
+                    <p class="text-2xl font-light italic text-on-surface-variant mt-10">
+                        "The best of people are those that are most useful to people."
+                        <span class="not-italic font-black text-primary">— Thank You</span>
+                    </p>
+                </div>
+
             </div>
-        </div>
 
-        <div class="flex gap-4 mt-10">
-            <div class="h-1 w-12 bg-primary rounded-full"></div>
-            <div class="h-1 w-12 bg-white/20 rounded-full"></div>
-            <div class="h-1 w-12 bg-white/20 rounded-full"></div>
-        </div>
-    </main>
+            <div class="flex gap-4 flex-shrink-0" style="padding:24px 0" id="progress-dots">
+                <div class="rounded-full" style="width:48px;height:4px;background:#68dba9"></div>
+                <div class="rounded-full" style="width:48px;height:4px;background:rgba(255,255,255,0.2)"></div>
+                <div class="rounded-full" style="width:48px;height:4px;background:rgba(255,255,255,0.2)"></div>
+                <div class="rounded-full" style="width:48px;height:4px;background:rgba(255,255,255,0.2)"></div>
+            </div>
+        </main>
+    </div>
 
-    <footer class="fixed bottom-0 left-0 w-full h-16 bg-surface-container-lowest/80 backdrop-blur-md flex items-center overflow-hidden border-t border-white/5">
-        <div class="flex scrolling-ticker-animation whitespace-nowrap" id="ticker-content-1"></div>
+    <!-- ════════ FOOTER ════════ -->
+    <footer class="flex-shrink-0 flex items-center justify-center border-t border-secondary/20" style="height:64px;background:rgba(6,14,32,0.9)">
+        <p class="text-xl font-semibold tracking-widest text-on-surface-variant">
+            Welcome to <span class="text-secondary font-bold">Jaamia Masjid</span>
+        </p>
     </footer>
+
 </div>
 
 <script>
-(function() {
+(function () {
+    'use strict';
+
+    const DESIGN_W = 1920, DESIGN_H = 1080;
+    const scaler = document.getElementById('scaler');
+
+    function applyScale() {
+        const scale = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
+        scaler.style.transform = 'scale(' + scale + ')';
+        scaler.style.left = ((window.innerWidth  - DESIGN_W * scale) / 2) + 'px';
+        scaler.style.top  = ((window.innerHeight - DESIGN_H * scale) / 2) + 'px';
+    }
+    applyScale();
+    window.addEventListener('resize', applyScale);
+
     const data = JSON.parse(document.getElementById('dashboard-data').textContent);
-    let currentSlide = 0;
 
-    function updateUI() {
+    const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    function updateClock() {
         const now = new Date();
-        document.getElementById('current-time').innerHTML = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        // Populate Events
-        document.getElementById('events-container').innerHTML = data.events.map(e => `
-            <div class="flex gap-6 bg-white/5 p-6 rounded-2xl border border-white/5">
-                <div class="bg-primary/20 p-4 rounded-xl text-center min-w-[80px]">
-                    <div class="text-xs font-bold text-primary">${e.day}</div>
-                    <div class="text-3xl font-black text-white">${e.dayNum}</div>
-                </div>
-                <div>
-                    <div class="text-2xl font-bold">${e.title}</div>
-                    <div class="text-on-surface-variant">${e.time} • ${e.location}</div>
-                </div>
-            </div>
-        `).join('');
-
-        // Ticker
-        const tickerMsg = `STRAND MOSLEM COUNCIL • ${data.ticker[0]} • `;
-        document.getElementById('ticker-content-1').innerHTML = `<span class="text-xl font-bold px-10">${tickerMsg.repeat(10)}</span>`;
+        const s = now.getSeconds();
+        let h = now.getHours();
+        const m = now.getMinutes();
+        const ap = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        document.getElementById('clock-time').innerHTML =
+            h + ':' + String(m).padStart(2,'0') +
+            ' <span style="font-size:36px;font-weight:300;opacity:0.6">' + ap + '</span>';
+        document.getElementById('clock-date').textContent =
+            DAYS[now.getDay()] + ', ' + MONTHS[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+        if (s === 0) renderPrayers();
     }
 
-    let chart = null;
-    function initChart() {
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Utilities', 'Salaries', 'Maintenance', 'Janaaza'],
-                datasets: [{
-                    data: [data.monthlyExpenses.utilityBills, data.monthlyExpenses.salaries, data.monthlyExpenses.propertyMaintenance, data.monthlyExpenses.janaazaCosts],
-                    backgroundColor: ['#68dba9', '#e9c349', '#bec6e0', '#ffb4ab'],
-                    borderWidth: 0
-                }]
-            },
-            options: { plugins: { legend: { labels: { color: '#fff', font: { size: 18 } } } } }
+    const P_NAMES = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
+    const P_IDX   = [0, 2, 3, 4, 5];
+    const P_ICONS = ['wb_twilight','wb_sunny','light_mode','bedtime','nights_stay'];
+
+    function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
+    function fmt12(t) {
+        let [h,m] = t.split(':').map(Number);
+        const ap = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return h + ':' + String(m).padStart(2,'0') + ' ' + ap;
+    }
+
+    function renderPrayers() {
+        const now   = new Date();
+        const times = data.prayerTimes[String(now.getMonth() + 1)];
+        const nowM  = now.getHours() * 60 + now.getMinutes();
+        let next    = times.findIndex(function(t){ return toMin(t) > nowM; });
+        if (next === -1) next = 0;
+
+        const list = document.getElementById('prayer-list');
+        list.innerHTML = '';
+        P_IDX.forEach(function(fi, i) {
+            const isNext = fi === next;
+            const row = document.createElement('div');
+            if (isNext) {
+                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:12px;background:linear-gradient(to right,#68dba9,#009367);color:#fff;box-shadow:0 0 15px rgba(104,219,169,0.3)';
+                row.innerHTML =
+                    '<div style="display:flex;align-items:center;gap:12px">' +
+                        '<span class="material-symbols-outlined" style="font-variation-settings:\'FILL\' 1">' + P_ICONS[i] + '</span>' +
+                        '<div><div style="font-size:18px;font-weight:700">' + P_NAMES[i] + '</div>' +
+                        '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8">Next Prayer</div></div>' +
+                    '</div>' +
+                    '<span style="font-size:20px;font-weight:900;font-family:monospace">' + fmt12(times[fi]) + '</span>';
+            } else {
+                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:12px;color:#c6c6cd';
+                row.innerHTML =
+                    '<div style="display:flex;align-items:center;gap:12px">' +
+                        '<span class="material-symbols-outlined">' + P_ICONS[i] + '</span>' +
+                        '<span style="font-size:18px;font-weight:600">' + P_NAMES[i] + '</span>' +
+                    '</div>' +
+                    '<span style="font-size:18px;font-family:monospace">' + fmt12(times[fi]) + '</span>';
+            }
+            list.appendChild(row);
         });
     }
 
-    function rotateSlides() {
-        const slides = document.querySelectorAll('.carousel-slide');
-        slides.forEach((s, i) => s.style.opacity = (i === currentSlide) ? '1' : '0');
-        if(currentSlide === 2) initChart();
-        currentSlide = (currentSlide + 1) % slides.length;
+    function renderEvents() {
+        document.getElementById('events-container').innerHTML = data.events.map(function(e) {
+            return '<div style="display:flex;align-items:center;gap:32px;background:rgba(255,255,255,0.05);padding:32px;border-radius:24px;border:1px solid rgba(255,255,255,0.05)">' +
+                '<div style="width:96px;height:96px;background:rgba(104,219,169,0.15);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">' +
+                    '<span style="font-size:11px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:-0.05em">' + e.day + '</span>' +
+                    '<span style="font-size:40px;font-weight:900;color:#fff">' + e.dayNum + '</span>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:4px">' + e.title + '</h3>' +
+                    '<p style="font-size:18px;color:#c6c6cd">' + e.time + ' &bull; ' + e.location + '</p>' +
+                '</div>' +
+            '</div>';
+        }).join('');
     }
 
-    updateUI();
-    setInterval(updateUI, 1000);
-    setInterval(rotateSlides, 10000);
-    rotateSlides();
+    const COLORS = ['#68dba9','#e9c349','#bec6e0','#ffb4ab'];
+    let chart = null;
+
+    function initChart() {
+        if (chart) return;
+        const labels = Object.keys(data.monthlyExpenses);
+        const values = Object.values(data.monthlyExpenses);
+        chart = new Chart(document.getElementById('expenseChart'), {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: COLORS, borderWidth: 0 }] },
+            options: { cutout: '65%', plugins: { legend: { display: false } }, animation: { duration: 800 } }
+        });
+        document.getElementById('expense-legend').innerHTML = labels.map(function(l,i) {
+            return '<div style="display:flex;align-items:center;justify-content:space-between">' +
+                '<div style="display:flex;align-items:center;gap:12px">' +
+                    '<div style="width:16px;height:16px;border-radius:50%;background:' + COLORS[i] + ';flex-shrink:0"></div>' +
+                    '<span style="font-size:20px;color:#c6c6cd">' + l + '</span>' +
+                '</div>' +
+                '<span style="font-size:20px;font-weight:700;color:#fff">R' + values[i].toLocaleString() + '</span>' +
+            '</div>';
+        }).join('');
+    }
+
+    const TOTAL = 4;
+    let current = 0;
+
+    function goTo(idx) {
+        document.querySelectorAll('.carousel-slide').forEach(function(s, i) {
+            s.classList.toggle('active', i === idx);
+        });
+        document.querySelectorAll('#tab-nav .tab-link').forEach(function(a, i) {
+            a.classList.toggle('active', i === idx);
+        });
+        document.querySelectorAll('#progress-dots div').forEach(function(d, i) {
+            d.style.background = i === idx ? '#68dba9' : 'rgba(255,255,255,0.2)';
+        });
+        if (idx === 2) initChart();
+        current = idx;
+    }
+
+    document.querySelectorAll('#tab-nav .tab-link').forEach(function(a) {
+        a.addEventListener('click', function(e) { e.preventDefault(); goTo(+a.dataset.slide); });
+    });
+
+    renderEvents();
+    renderPrayers();
+    updateClock();
+    goTo(0);
+
+    setInterval(updateClock, 1000);
+    setInterval(function() { goTo((current + 1) % TOTAL); }, 20000);
+
 })();
 </script>
 </body>
