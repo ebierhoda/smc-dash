@@ -86,18 +86,35 @@
 <script type="application/json" id="dashboard-data">
 {
   "prayerTimes": {
-    "1":  ["04:58","06:26","13:02","16:47","19:37","21:00"],
-    "2":  ["05:15","06:37","13:04","16:44","19:29","20:48"],
-    "3":  ["05:22","06:40","12:57","16:30","19:12","20:29"],
-    "4":  ["05:20","06:35","12:44","16:09","18:51","20:06"],
-    "5":  ["05:14","06:29","12:35","15:52","18:38","19:52"],
-    "6":  ["05:10","06:27","12:31","15:43","18:33","19:47"],
-    "7":  ["05:08","06:26","12:31","15:44","18:34","19:48"],
-    "8":  ["05:00","06:18","12:33","15:53","18:45","19:59"],
-    "9":  ["04:43","06:02","12:32","16:04","19:00","20:16"],
-    "10": ["04:22","05:44","12:29","16:14","19:13","20:31"],
-    "11": ["04:05","05:31","12:27","16:24","19:22","20:43"],
-    "12": ["04:00","05:28","12:29","16:35","19:30","20:52"]
+    "2026-04-19": ["05:55","12:48","15:54","18:22","19:31"],
+    "2026-04-20": ["05:56","12:48","15:53","18:21","19:29"],
+    "2026-04-21": ["05:57","12:48","15:52","18:20","19:28"],
+    "2026-04-22": ["05:57","12:48","15:51","18:19","19:27"],
+    "2026-04-23": ["05:58","12:48","15:50","18:17","19:26"],
+    "2026-04-24": ["05:59","12:47","15:49","18:16","19:25"],
+    "2026-04-25": ["05:59","12:47","15:48","18:15","19:24"],
+    "2026-04-26": ["06:00","12:47","15:47","18:14","19:23"],
+    "2026-04-27": ["06:01","12:47","15:47","18:13","19:22"],
+    "2026-04-28": ["06:01","12:47","15:46","18:12","19:21"],
+    "2026-04-29": ["06:02","12:47","15:45","18:11","19:20"],
+    "2026-04-30": ["06:03","12:46","15:44","18:10","19:19"],
+    "2026-05-01": ["06:03","12:46","15:43","18:09","19:18"],
+    "2026-05-02": ["06:04","12:46","15:42","18:08","19:18"],
+    "2026-05-03": ["06:05","12:46","15:42","18:07","19:17"],
+    "2026-05-04": ["06:05","12:46","15:41","18:06","19:16"],
+    "2026-05-05": ["06:05","12:46","15:40","18:05","19:15"],
+    "2026-05-06": ["06:06","12:46","15:39","18:04","19:14"],
+    "2026-05-07": ["06:07","12:46","15:39","18:03","19:13"],
+    "2026-05-08": ["06:08","12:45","15:38","18:02","19:13"],
+    "2026-05-09": ["06:08","12:45","15:37","18:01","19:12"],
+    "2026-05-10": ["06:09","12:45","15:37","18:01","19:11"],
+    "2026-05-11": ["06:10","12:45","15:36","18:00","19:10"],
+    "2026-05-12": ["06:10","12:45","15:35","17:59","19:10"],
+    "2026-05-13": ["06:11","12:45","15:35","17:58","19:09"],
+    "2026-05-14": ["06:11","12:45","15:34","17:57","19:09"],
+    "2026-05-15": ["06:12","12:45","15:33","17:57","19:08"],
+    "2026-05-16": ["06:13","12:45","15:33","17:56","19:07"],
+    "2026-05-17": ["06:13","12:45","15:32","17:55","19:07"]
   },
   "events": [
     { "day": "MON", "recurring": true,  "title": "Islam for Beginners",  "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand", "benefits": ["Authentic Knowledge", "Master the Basics", "Pray with Confidence"] },
@@ -278,7 +295,7 @@
     }
 
     const P_NAMES = ['Fajr','Dhuhr','Asr','Maghrib','Isha'];
-    const P_IDX   = [0, 2, 3, 4, 5];
+    const P_IDX   = [0, 1, 2, 3, 4];
     const P_ICONS = ['wb_twilight','wb_sunny','light_mode','bedtime','nights_stay'];
 
     function toMin(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
@@ -290,9 +307,12 @@
     }
 
     function renderPrayers() {
-        const now   = new Date();
-        const times = data.prayerTimes[String(now.getMonth() + 1)];
-        const nowM  = now.getHours() * 60 + now.getMinutes();
+        const now    = new Date();
+        const key    = now.getFullYear() + '-' +
+                       String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                       String(now.getDate()).padStart(2, '0');
+        const times  = data.prayerTimes[key] || [];
+        const nowM   = now.getHours() * 60 + now.getMinutes();
         let next    = times.findIndex(function(t){ return toMin(t) > nowM; });
         if (next === -1) next = 0;
 
@@ -309,7 +329,7 @@
                         '<div><div style="font-size:18px;font-weight:700">' + P_NAMES[i] + '</div>' +
                         '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8">Next Prayer</div></div>' +
                     '</div>' +
-                    '<span style="font-size:20px;font-weight:900;font-family:monospace">' + fmt12(times[fi]) + '</span>';
+                    '<span style="font-size:20px;font-weight:900;font-family:monospace">' + (times[fi] ? fmt12(times[fi]) : '--:--') + '</span>';
             } else {
                 row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:16px;border-radius:12px;color:#c6c6cd';
                 row.innerHTML =
@@ -317,7 +337,7 @@
                         '<span class="material-symbols-outlined">' + P_ICONS[i] + '</span>' +
                         '<span style="font-size:18px;font-weight:600">' + P_NAMES[i] + '</span>' +
                     '</div>' +
-                    '<span style="font-size:18px;font-family:monospace">' + fmt12(times[fi]) + '</span>';
+                    '<span style="font-size:18px;font-family:monospace">' + (times[fi] ? fmt12(times[fi]) : '--:--') + '</span>';
             }
             list.appendChild(row);
         });
