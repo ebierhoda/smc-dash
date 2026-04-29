@@ -100,8 +100,8 @@
     "12": ["04:00","05:28","12:29","16:35","19:30","20:52"]
   },
   "events": [
-    { "day": "MON", "recurring": true,  "title": "Islam for Beginners",  "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
-    { "day": "WED", "recurring": true,  "title": "Marriage in Islam",    "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
+    { "day": "MON", "recurring": true,  "title": "Islam for Beginners",  "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand", "benefits": ["Authentic Knowledge", "Master the Basics", "Pray with Confidence"] },
+    { "day": "WED", "recurring": true,  "title": "Marriage in Islam",    "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand", "benefits": ["Learn the Fiqh of Marriage", "Strengthen Your Marriage with Faith"] },
     { "day": "THU", "dayNum": "30", "month": "APR", "title": "Ratib Al Haddad",      "subtitle": "SMC Monthly",  "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
     { "day": "FRI", "dayNum": "1",  "month": "MAY", "title": "Weekly Khatam – Juz 1","subtitle": "SMC Weekly",   "time": "After Maghrib", "location": "Jaamia Masjid, Strand" }
   ],
@@ -358,12 +358,27 @@
                         '<span style="font-size:10px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.05em">' + e.month + '</span>' +
                     '</div>';
             }
-            return '<div style="display:flex;align-items:center;gap:24px;background:rgba(255,255,255,0.05);padding:28px;border-radius:24px;border:1px solid rgba(255,255,255,0.05)">' +
+            var benefitsHtml = '';
+            if (e.benefits && e.benefits.length) {
+                var bulletItems = e.benefits.map(function(b) {
+                    return '<li style="display:flex;align-items:center;gap:8px;font-size:14px;color:#c6c6cd">' +
+                        '<span style="width:6px;height:6px;border-radius:50%;background:#68dba9;flex-shrink:0"></span>' + b +
+                    '</li>';
+                }).join('');
+                benefitsHtml =
+                    '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07)">' +
+                        '<p style="font-size:10px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Benefits</p>' +
+                        '<ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px">' + bulletItems + '</ul>' +
+                    '</div>';
+            }
+            var align = e.benefits && e.benefits.length ? 'flex-start' : 'center';
+            return '<div style="display:flex;align-items:' + align + ';gap:24px;background:rgba(255,255,255,0.05);padding:28px;border-radius:24px;border:1px solid rgba(255,255,255,0.05)">' +
                 dateBox +
-                '<div style="min-width:0">' +
+                '<div style="min-width:0;flex:1">' +
                     '<p style="font-size:11px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">' + (e.subtitle || '') + '</p>' +
                     '<h3 style="font-size:26px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.2">' + e.title + '</h3>' +
                     '<p style="font-size:16px;color:#c6c6cd">' + e.time + ' &bull; ' + e.location + '</p>' +
+                    benefitsHtml +
                 '</div>' +
             '</div>';
         }).join('');
