@@ -100,8 +100,10 @@
     "12": ["04:00","05:28","12:29","16:35","19:30","20:52"]
   },
   "events": [
-    { "day": "FRI", "dayNum": "3",  "title": "Friday Family Night: Seerah Class", "time": "7:00 PM", "location": "Main Hall" },
-    { "day": "SAT", "dayNum": "4",  "title": "Community Clean-up",                "time": "9:00 AM", "location": "Mosque Grounds" }
+    { "day": "MON", "recurring": true,  "title": "Islam for Beginners",  "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
+    { "day": "WED", "recurring": true,  "title": "Marriage in Islam",    "subtitle": "SMC Weekly Class • Mln Faeez Harris", "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
+    { "day": "THU", "dayNum": "30", "month": "APR", "title": "Ratib Al Haddad",      "subtitle": "SMC Monthly",  "time": "After Maghrib", "location": "Jaamia Masjid, Strand" },
+    { "day": "FRI", "dayNum": "1",  "month": "MAY", "title": "Weekly Khatam – Juz 1","subtitle": "SMC Weekly",   "time": "After Maghrib", "location": "Jaamia Masjid, Strand" }
   ],
   "donation": { "raised": 210000, "goal": 300000, "percentage": 70 },
   "monthlyExpenses": { "Utility Bills": 120000, "Salaries": 90000, "Maintenance": 8000, "Janaaza": 5000 }
@@ -340,18 +342,33 @@
     }
 
     function renderEvents() {
-        document.getElementById('events-container').innerHTML = data.events.map(function(e) {
-            return '<div style="display:flex;align-items:center;gap:32px;background:rgba(255,255,255,0.05);padding:32px;border-radius:24px;border:1px solid rgba(255,255,255,0.05)">' +
-                '<div style="width:96px;height:96px;background:rgba(104,219,169,0.15);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">' +
-                    '<span style="font-size:11px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:-0.05em">' + e.day + '</span>' +
-                    '<span style="font-size:40px;font-weight:900;color:#fff">' + e.dayNum + '</span>' +
-                '</div>' +
-                '<div>' +
-                    '<h3 style="font-size:30px;font-weight:700;color:#fff;margin-bottom:4px">' + e.title + '</h3>' +
-                    '<p style="font-size:18px;color:#c6c6cd">' + e.time + ' &bull; ' + e.location + '</p>' +
+        var cards = data.events.map(function(e) {
+            var dateBox;
+            if (e.recurring) {
+                dateBox =
+                    '<div style="width:96px;height:96px;background:rgba(104,219,169,0.15);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0">' +
+                        '<span style="font-size:10px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.08em;opacity:0.8">Every</span>' +
+                        '<span style="font-size:22px;font-weight:900;color:#fff;line-height:1">' + e.day + '</span>' +
+                    '</div>';
+            } else {
+                dateBox =
+                    '<div style="width:96px;height:96px;background:rgba(104,219,169,0.15);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;flex-shrink:0">' +
+                        '<span style="font-size:10px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.05em">' + e.day + '</span>' +
+                        '<span style="font-size:34px;font-weight:900;color:#fff;line-height:1">' + e.dayNum + '</span>' +
+                        '<span style="font-size:10px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.05em">' + e.month + '</span>' +
+                    '</div>';
+            }
+            return '<div style="display:flex;align-items:center;gap:24px;background:rgba(255,255,255,0.05);padding:28px;border-radius:24px;border:1px solid rgba(255,255,255,0.05)">' +
+                dateBox +
+                '<div style="min-width:0">' +
+                    '<p style="font-size:11px;font-weight:700;color:#68dba9;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">' + (e.subtitle || '') + '</p>' +
+                    '<h3 style="font-size:26px;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.2">' + e.title + '</h3>' +
+                    '<p style="font-size:16px;color:#c6c6cd">' + e.time + ' &bull; ' + e.location + '</p>' +
                 '</div>' +
             '</div>';
         }).join('');
+        document.getElementById('events-container').innerHTML =
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' + cards + '</div>';
     }
 
     const COLORS = ['#68dba9','#e9c349','#bec6e0','#ffb4ab'];
